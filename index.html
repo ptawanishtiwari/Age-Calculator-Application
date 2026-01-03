@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Age Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- AOS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<style>
+/* ===== GLOBAL ===== */
+body{
+    background: radial-gradient(circle at top,#1e3c72,#0f2027 70%);
+    min-height:100vh;
+    color:#fff;
+    font-family: "Poppins", system-ui;
+    overflow:hidden;
+}
+
+/* ===== ANIMATED BACKGROUND GRID ===== */
+.bg-grid{
+    position:fixed;
+    inset:0;
+    background:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:60px 60px;
+    animation:gridMove 20s linear infinite;
+    z-index:-2;
+}
+@keyframes gridMove{
+    from{ background-position:0 0, 0 0;}
+    to{ background-position:600px 600px, 600px 600px;}
+}
+
+/* ===== GLOW ORBS ===== */
+.orb{
+    position:absolute;
+    width:300px;
+    height:300px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:0.6;
+}
+.orb1{ background:#4facfe; top:-80px; left:-80px; }
+.orb2{ background:#00f2fe; bottom:-100px; right:-100px; }
+
+/* ===== HEADER ===== */
+.navbar{
+    background:rgba(0,0,0,0.3);
+    backdrop-filter: blur(10px);
+}
+
+/* ===== CARD ===== */
+.glass-card{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 30px 80px rgba(0,0,0,0.4);
+    transition:0.5s;
+}
+.glass-card:hover{
+    transform:translateY(-12px) scale(1.01);
+}
+
+/* ===== INPUT ===== */
+input[type="date"]{
+    background:rgba(255,255,255,0.15);
+    border:none;
+    color:white;
+}
+input[type="date"]::-webkit-calendar-picker-indicator{
+    filter:invert(1);
+}
+
+/* ===== BUTTON ===== */
+.btn-glow{
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    border:none;
+    color:#000;
+    font-weight:600;
+    border-radius:40px;
+    padding:12px;
+    position:relative;
+    overflow:hidden;
+}
+.btn-glow::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at center,rgba(255,255,255,.6),transparent 60%);
+    opacity:0;
+    transition:.4s;
+}
+.btn-glow:hover::after{ opacity:1; }
+
+/* ===== LOADER ===== */
+.loader{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:4px solid rgba(255,255,255,0.2);
+    border-top:4px solid #00f2fe;
+    animation:spin 1s linear infinite;
+    display:none;
+    margin:auto;
+}
+@keyframes spin{
+    to{ transform:rotate(360deg); }
+}
+
+/* ===== RESULT ===== */
+#result{
+    font-size:1.3rem;
+    font-weight:500;
+    letter-spacing:1px;
+    text-shadow:0 0 15px rgba(0,242,254,0.6);
+}
+
+/* ===== FOOTER ===== */
+footer{
+    background:rgba(0,0,0,0.35);
+    backdrop-filter: blur(10px);
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-grid"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- HEADER -->
+<nav class="navbar navbar-dark px-4">
+    <span class="navbar-brand fw-semibold">Age Intelligence</span>
+</nav>
+
+<!-- MAIN -->
+<div class="container d-flex justify-content-center align-items-center" style="min-height:85vh;">
+<div class="col-lg-5 col-md-7" data-aos="zoom-in">
+
+    <div class="glass-card p-5 text-center">
+        <h2 class="mb-4">Age Calculator</h2>
+
+        <input type="date" id="dob" class="form-control mb-4">
+
+        <button class="btn btn-glow w-100 mb-4" onclick="calculateAge()">
+            Calculate Age
+        </button>
+
+        <div class="loader" id="loader"></div>
+        <div id="result" class="mt-4"></div>
+    </div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center p-2">
+    © Designed & Developed By Pt. Awanish Tiwari
+</footer>
+
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+AOS.init({ duration:1200, once:true });
+
+// Floating orbs animation
+gsap.to(".orb1",{ x:60, y:40, duration:6, repeat:-1, yoyo:true });
+gsap.to(".orb2",{ x:-60, y:-40, duration:7, repeat:-1, yoyo:true });
+
+function calculateAge(){
+    const dobValue = document.getElementById("dob").value;
+    const loader = document.getElementById("loader");
+    const result = document.getElementById("result");
+
+    result.innerText = "";
+
+    if(!dobValue){
+        result.innerText = "Please select your date of birth";
+        return;
+    }
+
+    loader.style.display = "block";
+
+    setTimeout(()=>{
+        const dob = new Date(dobValue);
+        const today = new Date();
+
+        let age = today.getFullYear() - dob.getFullYear();
+        let month = today.getMonth() - dob.getMonth();
+        let day = today.getDate() - dob.getDate();
+
+        if(day < 0){ month--; day += 30; }
+        if(month < 0){ age--; month += 12; }
+
+        loader.style.display = "none";
+        result.innerText = `${age} Years  ${month} Months  ${day} Days`;
+    },1000);
+}
+</script>
+
+</body>
+</html>
